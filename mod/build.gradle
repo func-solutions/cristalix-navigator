@@ -27,7 +27,7 @@ jar {
 }
 
 bundle {
-    modName 'Beeline Hub Mod'
+    modName 'Navigator Mod'
     mainClass 'App'
     author 'func'
     keep('class ru.cristalix.data.** { *; }')
