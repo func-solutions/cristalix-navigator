@@ -1,0 +1,35 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.6.20' apply false
+    id 'dev.implario.bundler' version '4.0.1'
+}
+
+apply plugin: 'kotlin'
+
+dependencies {
+    implementation 'ru.cristalix:client-api:live-SNAPSHOT'
+    implementation 'ru.cristalix:uiengine:4.87-SNAPSHOT'
+    implementation 'ru.cristalix:client-sdk:live-SNAPSHOT'
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+        freeCompilerArgs += "-Xskip-prerelease-check"
+    }
+}
+
+jar {
+    from sourceSets.main.resources
+    from {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+bundle {
+    modName 'Beeline Hub Mod'
+    mainClass 'App'
+    author 'func'
+    keep('class ru.cristalix.data.** { *; }')
+    keep('class ru.cristalix.** { *; }')
+}

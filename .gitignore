@@ -1,0 +1,15 @@
+.gradle
+build
+
+/.idea
+*.iml
+
+hs_err_pid*
+replay_pid*
+
+*.jar
+!gradle-wrapper.jar
+*.zip
+*.tar.gz
+*.log
+*.class
