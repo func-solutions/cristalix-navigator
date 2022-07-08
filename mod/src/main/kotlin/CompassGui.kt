@@ -251,6 +251,33 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         mod.registerHandler<WindowResize> { resize() }
         mod.registerHandler<ScaleChange> { resize() }
 
+        val russianSymbols = "йцукенгшщзхъфывапролджэячсмитьбю"
+        val englishSymbols = "qwertyuiopasdfghjklzxcvbnm[];',."
+        val replacement = "qйwцeуrкtеyнuгiшoщpз[х]ъsыdвfаgпhрjоkлlд;ж'эzяxчcсvмbиnтmь,б.ю"
+        val replace = mapOf(
+            'ж' to 'j',
+            'е' to 'e',
+            'e' to 'и',
+            't' to 'т',
+            'д' to 'd',
+            'с' to 's',
+            's' to 'с',
+            'p' to 'п',
+            'n' to 'н',
+            'b' to 'б',
+            'o' to 'о',
+            'c' to 'с',
+            'к' to 'k',
+            'и' to 'e',
+            'а' to 'y',
+            'в' to 'w',
+            'г' to 'g',
+            'v' to 'в',
+            'б' to 'b',
+            'п' to 'p',
+            'р' to 'p'
+        )
+
         var symbolsCount = search.contentText.content.length
         beforeRender {
             if (updateTagsState) {
@@ -260,22 +287,23 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                     else Color(42, 102, 189, 1.0)
                 }
             }
-            val searchText = search.contentText.content.replace("|", "").replace(" ", "").lowercase()
+            val searchText = search.contentText.content
+                .replace("|", "")
+                .replace(" ", "")
+                .lowercase()
+                .replace("дж", "jed")
+                .replace("eve", "иве")
+                .replace("при", "pri")
 
             if (search.typing && symbolsCount != searchText.length) {
                 symbolsCount = searchText.length
+
                 val russian = search.contentText.content
-                    .replace('q', 'й').replace('w', 'ц').replace('e', 'у')
-                    .replace('r', 'к').replace('t', 'е').replace('y', 'н')
-                    .replace('u', 'г').replace('i', 'ш').replace('o', 'щ')
-                    .replace('p', 'з').replace('[', 'х').replace(']', 'ъ')
-                    .replace('a', 'ф').replace('s', 'ы').replace('d', 'в')
-                    .replace('f', 'а').replace('g', 'п').replace('h', 'р')
-                    .replace('j', 'о').replace('k', 'л').replace('l', 'д')
-                    .replace(';', 'ж').replace('\'', 'э')
-                    .replace('z', 'я').replace('x', 'ч').replace('c', 'с')
-                    .replace('v', 'м').replace('b', 'и').replace('n', 'т')
-                    .replace('m', 'ь').replace(',', 'б').replace('.', 'ю')
+                    .filter { englishSymbols.contains(it) }
+                    .map { replacement[replacement.indexOf(it) + 1] }
+                val english = search.contentText.content
+                    .filter { russianSymbols.contains(it) }
+                    .map { replacement[maxOf(0, replacement.indexOf(it))] }
 
                 redraw { game ->
                     val title = game.title?.lowercase() ?: ""
@@ -283,10 +311,11 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                     search.contentText.content.lowercase().forEachIndexed { index, c ->
                         if (index >= title.length)
                             return@forEachIndexed
-                        val dx = abs(c - title[index])
-                        val rdx = abs(russian[index] - title[index])
-                        sum += (search.contentText.content.count() - index) *
-                                (if (dx == 0 || rdx == 0) 100 else maxOf(0, 100 - dx - rdx / 20))
+                        val dx = minOf(abs(c - title[index]), abs((replace[c] ?: c) - title[index]))
+                        val rdx = if (index >= russian.size) 40 else abs(russian[index] - title[index]) / 5
+                        val edx = if (index >= english.size) 40 else abs(english[index] - title[index]) / 5
+                        sum += (search.contentText.content.count() - index) * 3 *
+                                (if (dx == 0 || rdx == 0 || edx == 0) 600 else maxOf(0, 300 - dx / 15 - minOf(rdx, edx)))
 
                     }
                     -sum

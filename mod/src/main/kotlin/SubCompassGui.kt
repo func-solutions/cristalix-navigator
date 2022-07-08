@@ -1,4 +1,5 @@
 import org.lwjgl.input.Keyboard
+import ru.cristalix.uiengine.UIEngine
 import ru.cristalix.uiengine.element.ContextGui
 import ru.cristalix.uiengine.eventloop.animate
 import ru.cristalix.uiengine.onMouseUp
@@ -6,24 +7,37 @@ import ru.cristalix.uiengine.utility.*
 
 class SubCompassGui(var parent: CompassGame) : ContextGui() {
 
-    val scaling = 0.5
+    val scalingBox = if (parent.subGames?.size!! > 4) 0.38 else 0.5
 
     val content = flex {
         align = CENTER
         origin = CENTER
         flexSpacing = 4.0
 
+        if (parent.subGames?.size!! > 4)
+            overflowWrap = true
+
+        val boxSize = 160.0 * scalingBox
+
+        beforeTransform {
+            val box = UIEngine.overlayContext.size.x * 7 / 10
+            val count = (box / boxSize).toInt()
+            size.x = count * boxSize + (count - 1) * flexSpacing + 0.01
+        }
+
         parent.subGames?.forEach { sub ->
             +CompassNode(sub).apply {
-                game.size = V3(160.0 * scaling, 212.0 * scaling)
+                game.size = V3(boxSize, 212.0 * scalingBox)
                 hint.size = game.size
-                image.size = V3(148.0 * scaling, 148.0 * scaling)
+                image.size = V3(148.0 * scalingBox, 148.0 * scalingBox)
                 image.textureLocation = if (sub.parent != null && image.textureLocation == loading) sub.parent?.image
                 else sub.image
 
-                contentBox.size.y = 212.0 * scaling - 148.0 * scaling
-                contentBox.size.x = 160.0 * scaling
-                contentBox.offset.y += 148.0 * scaling
+                if (overflowWrap) content.scale = V3(.5, .5, .5)
+
+                contentBox.size.y = 212.0 * scalingBox - 148.0 * scalingBox
+                contentBox.size.x = boxSize
+                contentBox.offset.y += 148.0 * scalingBox
             }.game
         }
     }
@@ -31,7 +45,7 @@ class SubCompassGui(var parent: CompassGame) : ContextGui() {
     val container = +rectangle {
         align = CENTER
         origin = CENTER
-        size = V3(400.0, 220.0)
+        size = V3(400.0, 250.0)
         +text {
             align = TOP
             origin = TOP
