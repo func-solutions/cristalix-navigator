@@ -294,7 +294,10 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
             'v' to 'в',
             'б' to 'b',
             'п' to 'p',
-            'р' to 'p'
+            'р' to 'p',
+            'l' to 'л',
+            'л' to 'l',
+            'k' to 'к'
         )
 
         var symbolsCount = search.contentText.content.length
@@ -326,7 +329,11 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
 
                 redraw { game ->
                     val title = game.title?.lowercase() ?: ""
-                    var sum = 0
+                    var sum =
+                        if (title.contains(russian.toString()) ||
+                            title.contains(english.toString()) ||
+                            title.contains(search.contentText.content)
+                        ) 7500 * (search.contentText.content.length - 1) else 0
                     search.contentText.content.lowercase().forEachIndexed { index, c ->
                         if (index >= title.length)
                             return@forEachIndexed
