@@ -7,23 +7,29 @@ import ru.cristalix.uiengine.utility.*
 
 class SubCompassGui(var parent: CompassGame) : ContextGui() {
 
-    val scalingBox = if (parent.subGames?.size!! > 4) 0.38 else 0.5
+    val spacing = 4.0
+    val scalingBox = when(parent.subGames?.size!!) {
+        in 1..3 -> 0.75
+        in 1..5 -> 0.5
+        else -> 0.38
+    }
 
     val content = flex {
         align = CENTER
         origin = CENTER
-        flexSpacing = 4.0
-
-        if (parent.subGames?.size!! > 4)
-            overflowWrap = true
-
+        flexSpacing = spacing
         val boxSize = 160.0 * scalingBox
+
+        val ableInPage = (UIEngine.overlayContext.size.x * 7 / 10 / boxSize).toInt()
+
+        if (parent.subGames?.size!! > ableInPage)
+            overflowWrap = true
 
         beforeTransform {
             if (!overflowWrap) return@beforeTransform
-            val box = UIEngine.overlayContext.size.x * 7 / 10
-            val count = (box / boxSize).toInt()
-            size.x = count * boxSize + (count - 1) * flexSpacing + 0.01
+            val pages = parent.subGames?.size!! * 1.0 / ableInPage
+            offset.y = if (pages > 1 && pages <= 2) -boxSize * 2 / 3 else 0.0
+            size.x = ableInPage * boxSize + (ableInPage - 1) * flexSpacing + 0.01
         }
 
         parent.subGames?.forEach { sub ->
