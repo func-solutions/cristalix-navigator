@@ -66,11 +66,16 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         }
     }
 
+    var lastElementHeight = fielRelativeHeight * 0.5
+
     fun scrollable() = games.size > 3 * columns
+
+    fun scrollHeight() = lastElementHeight * games.size / columns
+
     var scroll = 0.0
         set(value) {
             scrollElement.offset.y =
-                value / (70 * games.size / columns) * (overlayContext.size.y - headerPadding - scrollElement.size.y)
+                value / scrollHeight() * (overlayContext.size.y - headerPadding - scrollElement.size.y)
             field = value
         }
 
@@ -81,7 +86,6 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
             ?.split("\n")
             ?.maxByOrNull { it.length } ?: ""
         val scaled = clientApi.fontRenderer().getStringWidth("$maxString  ")
-        println(maxString)
 
         return if (scaled * 0.75 >= overlayContext.size.x * 0.55 * 0.16666) 0.5 else 0.75
     }
@@ -108,6 +112,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                 val y = fielRelativeHeight / 160.0 * x
                 val icon = y * 148.0 / fielRelativeHeight
                 game.size = V3(x, y)
+                lastElementHeight = y * 1.5
                 hint.size = game.size
                 image.size.x = icon
                 image.size.y = icon
@@ -252,7 +257,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
             if (openned && scrollable()) {
                 val wheel = Mouse.getDWheel()
                 val move = sign(-wheel.toDouble()).toInt() * 30
-                if (wheel != 0 && scroll + move < 70 * games.size / columns && scroll + move >= 0) {
+                if (wheel != 0 && scroll + move < scrollHeight() && scroll + move >= 0) {
                     scroll += move
                     container.offset.y -= move
                 } else if (scroll < 0) {

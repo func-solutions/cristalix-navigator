@@ -40,7 +40,10 @@ class SubCompassGui(var parent: CompassGame) : ContextGui() {
                 image.textureLocation = if (sub.parent != null && image.textureLocation == loading) sub.parent?.image
                 else sub.image
 
-                if (overflowWrap) content.scale = V3(.5, .5, .5)
+                if (overflowWrap || scalingBox < 0.6) {
+                    content.scale = V3(.5, .5, .5)
+                    online.scale = V3(.5, .5, .5)
+                }
 
                 contentBox.size.y = 212.0 * scalingBox - 148.0 * scalingBox
                 contentBox.size.x = boxSize

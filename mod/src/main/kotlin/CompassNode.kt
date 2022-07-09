@@ -63,7 +63,6 @@ class CompassNode(var compassGame: CompassGame) {
             }
 
             onMouseUp {
-                println(compassGame.toString())
                 if (compassGame.subGames?.isEmpty() != false || compassGame.realmType == "HUB") mod.join(compassGame.realmType ?: "HUB")
                 else clientApi.chat().sendChatMessage("/hc-get-games-by-type " + compassGame.realmType)
             }
