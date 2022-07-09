@@ -5,7 +5,6 @@ import dev.xdark.clientapi.opengl.GlStateManager
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
 import ru.cristalix.clientapi.JavaMod.loadTextureFromJar
-import ru.cristalix.uiengine.UIEngine
 import ru.cristalix.uiengine.UIEngine.clientApi
 import ru.cristalix.uiengine.UIEngine.overlayContext
 import ru.cristalix.uiengine.element.CarvedRectangle
@@ -66,17 +65,25 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
             origin = TOP
         }
     }
+
     fun scrollable() = games.size > 3 * columns
     var scroll = 0.0
         set(value) {
-            scrollElement.offset.y = value / (70 * games.size / columns) * (overlayContext.size.y - headerPadding - scrollElement.size.y)
+            scrollElement.offset.y =
+                value / (70 * games.size / columns) * (overlayContext.size.y - headerPadding - scrollElement.size.y)
             field = value
         }
 
     fun getTextScale(): Double {
-        val maxString = games.maxOfOrNull { it.compassGame.title?.split("\n")?.maxByOrNull { it.count() } ?: "" } ?: ""
-        val scaled = clientApi.fontRenderer().getStringWidth(maxString)
-        return if (scaled * 0.75 > overlayContext.size.x * 0.55 * 0.16) 0.5 else 0.75
+        val maxString = games.maxByOrNull {
+            (it.compassGame.title?.split("\n")?.maxByOrNull { it.length } ?: "").length
+        }?.compassGame?.title
+            ?.split("\n")
+            ?.maxByOrNull { it.length } ?: ""
+        val scaled = clientApi.fontRenderer().getStringWidth("$maxString  ")
+        println(maxString)
+
+        return if (scaled * 0.75 >= overlayContext.size.x * 0.55 * 0.16666) 0.5 else 0.75
     }
 
     fun redraw(additionalSort: (CompassGame) -> Int = { 0 }) {
@@ -116,8 +123,15 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
             container + node.game
         }
 
-        scrollContainer.enabled = scrollable()
+        val sized = getTextScale()
+        val scaled = V3(sized, sized, sized)
 
+        games.forEach {
+            it.online.scale = scaled
+            it.content.scale = scaled
+        }
+
+        scrollContainer.enabled = scrollable()
         emptyCategoryText.content = if (games.isEmpty()) activeCategory.empty else ""
     }
 
@@ -210,6 +224,19 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         afterRender { GlStateManager.enableDepth() }
     }
 
+    fun resize() {
+        header.size.x = overlayContext.size.x * 0.6
+        container.size.x = header.size.x
+        if (compass.banners.isNotEmpty()) {
+            banner!!.size.x = header.size.x
+            banner!!.size.y =
+                (header.size.x / columns - padding * (columns.toFloat() - 1) / columns.toFloat() - 0.1) / 148.0 * fielRelativeHeight
+            bannerContainer!!.size = banner!!.size
+            bannerContainer!!.size.y += headerPadding
+        }
+        redraw()
+    }
+
     init {
         color = Color(0, 0, 0, 0.86)
 
@@ -233,19 +260,6 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                     container.offset.y = 4 * headerPadding + headerHeight
                 }
             }
-        }
-
-        fun resize() {
-            header.size.x = overlayContext.size.x * 0.6
-            container.size.x = header.size.x
-            if (compass.banners.isNotEmpty()) {
-                banner!!.size.x = header.size.x
-                banner!!.size.y =
-                    (header.size.x / columns - padding * (columns.toFloat() - 1) / columns.toFloat() - 0.1) / 148.0 * fielRelativeHeight
-                bannerContainer!!.size = banner!!.size
-                bannerContainer!!.size.y += headerPadding
-            }
-            redraw()
         }
 
         mod.registerHandler<WindowResize> { resize() }
@@ -315,7 +329,10 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                         val rdx = if (index >= russian.size) 40 else abs(russian[index] - title[index]) / 5
                         val edx = if (index >= english.size) 40 else abs(english[index] - title[index]) / 5
                         sum += (search.contentText.content.count() - index) * 3 *
-                                (if (dx == 0 || rdx == 0 || edx == 0) 600 else maxOf(0, 300 - dx / 15 - minOf(rdx, edx)))
+                                (if (dx == 0 || rdx == 0 || edx == 0) 600 else maxOf(
+                                    0,
+                                    300 - dx / 15 - minOf(rdx, edx)
+                                ))
 
                     }
                     -sum

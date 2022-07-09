@@ -20,6 +20,7 @@ class SubCompassGui(var parent: CompassGame) : ContextGui() {
         val boxSize = 160.0 * scalingBox
 
         beforeTransform {
+            if (!overflowWrap) return@beforeTransform
             val box = UIEngine.overlayContext.size.x * 7 / 10
             val count = (box / boxSize).toInt()
             size.x = count * boxSize + (count - 1) * flexSpacing + 0.01

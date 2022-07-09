@@ -5,10 +5,7 @@ import io.netty.buffer.ByteBuf
 import org.lwjgl.input.Keyboard
 import ru.cristalix.clientapi.KotlinMod
 import ru.cristalix.uiengine.UIEngine
-import ru.cristalix.uiengine.element.Context3D
 import ru.cristalix.uiengine.utility.Color
-import ru.cristalix.uiengine.utility.V3
-import ru.cristalix.uiengine.utility.WHITE
 import java.nio.charset.StandardCharsets
 
 lateinit var mod: App

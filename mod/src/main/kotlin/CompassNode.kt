@@ -11,18 +11,15 @@ import ru.cristalix.uiengine.utility.*
 
 class CompassNode(var compassGame: CompassGame) {
 
-    val scaling = compassGui?.getTextScale() ?: 0.75
     val content = text {
         align = CENTER
         origin = CENTER
         offset.y -= 8
-        scale = V3(scaling, scaling, scaling)
         content = compassGame.title ?: "Ошибка"
     }
     val online = text {
         align = CENTER
         origin = CENTER
-        scale = V3(scaling, scaling, scaling)
         lineHeight += 1
         color = Color(255, 255, 255, 0.62)
         content = "Онлайн ${compassGame.online}"
