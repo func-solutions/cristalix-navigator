@@ -14,7 +14,7 @@ class SubCompassGui(var parent: CompassGame) : ContextGui() {
         else -> 0.38
     }
 
-    val content = flex {
+    val flex = flex {
         align = CENTER
         origin = CENTER
         flexSpacing = spacing
@@ -64,7 +64,7 @@ class SubCompassGui(var parent: CompassGame) : ContextGui() {
             content = parent.title ?: "Выберите подрежим"
         }
         val backButtonSize = 20.0
-        +content
+        +flex
         +carved {
             carveSize = 1.0
             align = BOTTOM

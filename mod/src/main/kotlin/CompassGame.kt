@@ -10,6 +10,7 @@ data class CompassGame(
     var starred: Boolean = false,
     var dynamic: Boolean = false,
     var image: ResourceLocation = loading,
+    var description: List<String>? = listOf()
 ) {
 
     var parent: CompassGame? = null

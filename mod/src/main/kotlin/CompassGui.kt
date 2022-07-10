@@ -4,7 +4,9 @@ import dev.xdark.clientapi.event.window.WindowResize
 import dev.xdark.clientapi.opengl.GlStateManager
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
+import org.lwjgl.opengl.Display
 import ru.cristalix.clientapi.JavaMod.loadTextureFromJar
+import ru.cristalix.uiengine.UIEngine
 import ru.cristalix.uiengine.UIEngine.clientApi
 import ru.cristalix.uiengine.UIEngine.overlayContext
 import ru.cristalix.uiengine.element.CarvedRectangle
@@ -70,7 +72,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
 
     fun scrollable() = games.size > 3 * columns
 
-    fun scrollHeight() = lastElementHeight * games.size / columns
+    fun scrollHeight() = lastElementHeight * (games.size / columns - 2)
 
     var scroll = 0.0
         set(value) {
@@ -78,6 +80,32 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                 value / scrollHeight() * (overlayContext.size.y - headerPadding - scrollElement.size.y)
             field = value
         }
+
+    private val hoverTextScale = 0.5 + 0.25 + 0.125
+    private val hoverText = text {
+        shadow = true
+        lineHeight += 2
+        scale = V3(0.75, 0.75, 0.75)
+        color = WHITE
+        offset = V3(4.0, 4.0)
+    }
+    val hoverCenter = carved {
+        color = Color(42, 102, 189, 1.0)
+        offset = V3(1.0, 1.0)
+        +hoverText
+    }
+    val hoverContainer = carved {
+        color = Color(0, 0, 0, 0.38)
+        enabled = false
+        +hoverCenter
+
+        beforeRender {
+            GlStateManager.disableDepth()
+        }
+        afterRender {
+            GlStateManager.enableDepth()
+        }
+    }
 
     fun getTextScale(): Double {
         val maxString = games.maxByOrNull {
@@ -90,7 +118,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         return if (scaled * 0.75 >= overlayContext.size.x * 0.55 * 0.16666) 0.5 else 0.75
     }
 
-    fun redraw(additionalSort: (CompassGame) -> Int = { 0 }) {
+    fun redraw(additionalSort: (CompassGame) -> Int = { -2000 }) {
         compass.games.filter { playerData?.favorite?.contains(it.realmType) ?: false }
             .forEach { it.starred = true }
 
@@ -103,8 +131,8 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
 
         var pregames = activeCategory.games.invoke()
 
-        if (search.contentText.content.isNotEmpty())
-            pregames = pregames.sortedBy { additionalSort.invoke(it) }
+        if (search.contentText.content.replace("|", "").isNotEmpty())
+            pregames = pregames.sortedBy { additionalSort.invoke(it) }.take(6 + (Math.random() * 5).toInt())
 
         games = pregames.map { CompassNode(it) }.onEach {
             val node = it.apply {
@@ -124,6 +152,25 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                 contentBox.size.y = y - icon
                 contentBox.size.x = x
                 contentBox.offset.y = icon
+            }
+            node.game.onHover {
+                if (hovered && it.compassGame.description?.isNotEmpty() == true) {
+                    val desc = it.compassGame.description!!
+                    if (!hoverContainer.enabled) {
+                        hoverText.content = desc.joinToString("\n")
+                        hoverContainer.enabled = true
+                    }
+                    hoverContainer.size.x =
+                        clientApi.fontRenderer()
+                            .getStringWidth(desc.maxByOrNull { it.length } ?: "")
+                            .toDouble() * hoverTextScale - 4
+                    hoverContainer.size.y =
+                        hoverText.lineHeight * desc.count() * hoverTextScale + 6.0
+                    hoverCenter.size.x = hoverContainer.size.x - 2
+                    hoverCenter.size.y = hoverContainer.size.y - 2
+                } else {
+                    hoverContainer.enabled = false
+                }
             }
             container + node.game
         }
@@ -245,6 +292,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
     init {
         color = Color(0, 0, 0, 0.86)
 
+        +hoverContainer
         redraw()
         onKeyTyped { _, code ->
             if (code == Keyboard.KEY_ESCAPE)
@@ -254,15 +302,22 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         }
 
         mod.registerHandler<GameLoop> {
-            if (openned && scrollable()) {
-                val wheel = Mouse.getDWheel()
-                val move = sign(-wheel.toDouble()).toInt() * 30
-                if (wheel != 0 && scroll + move < scrollHeight() && scroll + move >= 0) {
-                    scroll += move
-                    container.offset.y -= move
-                } else if (scroll < 0) {
-                    scroll = 0.0
-                    container.offset.y = 4 * headerPadding + headerHeight
+            if (openned) {
+                val scale = clientApi.resolution().scaleFactor
+                hoverContainer.run {
+                    offset.x = Mouse.getX() / scale + 6.0
+                    offset.y = (Display.getHeight() - Mouse.getY()) / scale - 12.0
+                }
+                if (scrollable()) {
+                    val wheel = Mouse.getDWheel()
+                    val move = sign(-wheel.toDouble()).toInt() * 30
+                    if (wheel != 0 && scroll + move < scrollHeight() && scroll + move >= 0) {
+                        scroll += move
+                        container.offset.y -= move
+                    } else if (scroll < 0) {
+                        scroll = 0.0
+                        container.offset.y = 4 * headerPadding + headerHeight
+                    }
                 }
             }
         }
@@ -313,7 +368,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                 .replace("|", "")
                 .replace(" ", "")
                 .lowercase()
-                .replace("дж", "jed")
+                .replace("дж", "j")
                 .replace("eve", "иве")
                 .replace("при", "pri")
 
