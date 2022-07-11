@@ -55,7 +55,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         color = WHITE
         shadow = true
     }
-    lateinit var scrollElement: CarvedRectangle
+    lateinit var scrollElement: RectangleElement
     var draggingStart = 0.0
     val scrollContainer = +carved {
         size = V3(3.0, overlayContext.size.y - 4 * headerPadding)
@@ -64,11 +64,17 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         origin = RIGHT
         offset.x = -headerPadding
 
-        scrollElement = +carved {
-            size = V3(3.0, 140.0)
-            color = Color(42, 102, 189, 1.0)
+        scrollElement = +rectangle {
             align = TOP
             origin = TOP
+            size = V3(3.0 * 10, 140.0)
+
+            +carved {
+                align = CENTER
+                origin = CENTER
+                size = V3(3.0, 140.0)
+                color = Color(42, 102, 189, 1.0)
+            }
 
             onMouseDown {
                 val scale = clientApi.resolution().scaleFactor
