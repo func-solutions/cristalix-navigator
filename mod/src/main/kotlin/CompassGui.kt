@@ -143,6 +143,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         container.offset.y = 4 * headerPadding + headerHeight
         scroll = 0.0
         scrollContainer.size.y = overlayContext.size.y - 4 * headerPadding
+        hoverContainer.enabled = false
 
         val loadedGames = games
         loadedGames.forEach { container.removeChild(it.game) }
