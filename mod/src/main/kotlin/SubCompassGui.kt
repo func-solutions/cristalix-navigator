@@ -9,9 +9,9 @@ class SubCompassGui(var parent: CompassGame) : ContextGui() {
 
     val spacing = 4.0
     val scalingBox = when (parent.subGames?.size!!) {
-        in 1..3 -> 0.75
-        in 1..6 -> 0.5
-        else -> 0.38
+        in 1..2 -> 0.75
+        in 1..4 -> 0.65
+        else -> 0.3
     }
 
     val flex = flex {
@@ -20,41 +20,57 @@ class SubCompassGui(var parent: CompassGame) : ContextGui() {
         flexSpacing = spacing
         val boxSize = 160.0 * scalingBox
 
-        beforeTransform {
-            val ableInPage = (UIEngine.overlayContext.size.x * 7 / 10 / boxSize).toInt()
-
-            if (parent.subGames?.size!! > ableInPage) {
-                overflowWrap = true
-                size.x = ableInPage * boxSize + (ableInPage - 1) * flexSpacing + 0.01
-            } else {
-                overflowWrap = false
-            }
-        }
-
-        parent.subGames?.forEach { sub ->
-            +CompassNode(sub).apply {
+        val elements = parent.subGames?.map { sub ->
+            val node = CompassNode(sub).apply {
                 game.size = V3(boxSize, 212.0 * scalingBox)
                 hint.size = game.size
                 image.size = V3(148.0 * scalingBox, 148.0 * scalingBox)
                 image.textureLocation = if (sub.parent != null && image.textureLocation == loading) sub.parent?.image
                 else sub.image
 
-                if (overflowWrap || scalingBox < 0.6) {
-                    content.scale = V3(.5, .5, .5)
-                    online.scale = V3(.5, .5, .5)
-                }
-
                 contentBox.size.y = 212.0 * scalingBox - 148.0 * scalingBox
                 contentBox.size.x = boxSize
                 contentBox.offset.y += 148.0 * scalingBox
-            }.game
+
+                if (content.content.length >= 10 * 2 * scalingBox)
+                    content.content = content.content.reversed().replaceFirst(" ", "\n").reversed()
+
+                val sized = V3(maxOf(0.5, scalingBox), maxOf(0.5, scalingBox), maxOf(0.5, scalingBox))
+                content.scale = sized
+                online.scale = sized
+            }
+            +node.game
+            return@map node
+        }
+
+        beforeTransform {
+            val ableInPage = (UIEngine.overlayContext.size.x * 9 / 10 / boxSize).toInt()
+
+            if (parent.subGames?.size!! > ableInPage) {
+                overflowWrap = true
+                size.x = ableInPage * boxSize + (ableInPage - 1) * flexSpacing + 0.01
+
+                val sized = V3(maxOf(0.5, scalingBox), maxOf(0.5, scalingBox), maxOf(0.5, scalingBox))
+
+                elements?.forEach {
+                    it.content.scale = sized
+                    it.online.scale = sized
+                }
+            } else {
+                overflowWrap = false
+            }
         }
     }
 
     val container = +rectangle {
         align = CENTER
         origin = CENTER
-        size = V3(400.0, 250.0)
+
+        beforeTransform {
+            size.x = UIEngine.overlayContext.size.x * 8 / 10
+            size.y = UIEngine.overlayContext.size.y * 9 / 10
+        }
+
         +text {
             align = TOP
             origin = TOP

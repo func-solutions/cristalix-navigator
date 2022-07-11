@@ -107,15 +107,15 @@ class CompassNode(var compassGame: CompassGame) {
             val onHeader = compassGui?.header?.hovered == true
             if ((onHeader && on) || !hovered) {
                 on = false
-                hint.animate(0.2, Easings.CUBIC_OUT) { color.alpha = 0.0 }
+                hint.animate(0.1, Easings.CUBIC_OUT) { color.alpha = 0.0 }
             } else if (!on && hovered && !onHeader) {
                 on = true
-                hint.animate(0.2, Easings.CUBIC_OUT) { color.alpha = 0.82 }
+                hint.animate(0.1, Easings.CUBIC_OUT) { color.alpha = 0.82 }
             } else return@beforeRender
 
             animation = true
 
-            UIEngine.schedule(0.21) { animation = false }
+            UIEngine.schedule(0.1001) { animation = false }
             hintText.enabled = on
             if (compassGame.parent != null)
                 return@beforeRender
