@@ -63,6 +63,7 @@ class CompassNode(var compassGame: CompassGame) {
             }
 
             onMouseUp {
+                if (button != MouseButton.LEFT) return@onMouseUp
                 if (compassGame.subGames?.isEmpty() != false || compassGame.realmType == "HUB") mod.join(compassGame.realmType ?: "HUB")
                 else clientApi.chat().sendChatMessage("/hc-get-games-by-type " + compassGame.realmType)
             }
@@ -97,18 +98,21 @@ class CompassNode(var compassGame: CompassGame) {
             }
         }
         var on = false
-        onHover {
-            if (!on && hovered) {
-                on = true
-                hint.animate(0.2, Easings.CUBIC_OUT) { color.alpha = 0.82 }
-            } else if (on && !hovered) {
+
+        beforeRender {
+            val onHeader = compassGui?.header?.hovered == true
+            if ((onHeader && on) || !hovered) {
                 on = false
                 hint.animate(0.2, Easings.CUBIC_OUT) { color.alpha = 0.0 }
+            } else if (!on && hovered && !onHeader) {
+                on = true
+                hint.animate(0.2, Easings.CUBIC_OUT) { color.alpha = 0.82 }
             }
-            hintText.enabled = hovered
+
+            hintText.enabled = on
             if (compassGame.parent != null)
-                return@onHover
-            star.enabled = hovered
+                return@beforeRender
+            star.enabled = on
         }
     }
 }
