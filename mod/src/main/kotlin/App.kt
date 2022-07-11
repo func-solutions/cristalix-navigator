@@ -48,11 +48,7 @@ class App : KotlinMod() {
         }
 
         registerChannel("hc:games") {
-            val lol = readString()
-
-            println(lol)
-
-            compass = gson.fromJson(lol, Compass::class.java)
+            compass = gson.fromJson(readString(), Compass::class.java)
 
             if (compassGui == null) compassGui = CompassGui(compass)
 

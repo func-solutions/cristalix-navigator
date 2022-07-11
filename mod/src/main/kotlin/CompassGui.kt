@@ -12,6 +12,8 @@ import ru.cristalix.uiengine.UIEngine.overlayContext
 import ru.cristalix.uiengine.element.CarvedRectangle
 import ru.cristalix.uiengine.element.ContextGui
 import ru.cristalix.uiengine.element.RectangleElement
+import ru.cristalix.uiengine.eventloop.animate
+import ru.cristalix.uiengine.onMouseDown
 import ru.cristalix.uiengine.utility.*
 import kotlin.math.abs
 import kotlin.math.sign
@@ -54,21 +56,30 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         shadow = true
     }
     lateinit var scrollElement: CarvedRectangle
+    var draggingStart = 0.0
     val scrollContainer = +carved {
         size = V3(3.0, overlayContext.size.y - 4 * headerPadding)
         color = Color(21, 53, 98, 0.62)
         align = RIGHT
         origin = RIGHT
         offset.x = -headerPadding
+
         scrollElement = +carved {
             size = V3(3.0, 140.0)
             color = Color(42, 102, 189, 1.0)
             align = TOP
             origin = TOP
+
+            onMouseDown {
+                val scale = clientApi.resolution().scaleFactor
+                draggingStart = (Mouse.getY() / scale).toDouble()
+            }
         }
     }
 
     var lastElementHeight = fielRelativeHeight * 0.5
+
+    var animation = false
 
     fun scrollable() = games.size > 3 * columns
 
@@ -76,8 +87,13 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
 
     var scroll = 0.0
         set(value) {
-            scrollElement.offset.y =
-                value / scrollHeight() * (overlayContext.size.y - headerPadding - scrollElement.size.y)
+            animation = true
+            scrollElement.animate(0.05, Easings.QUINT_BOTH) {
+                container.offset.y = 4 * headerPadding + headerHeight - value
+                scrollElement.offset.y =
+                    value / scrollHeight() * (overlayContext.size.y - 4 * headerPadding - scrollElement.size.y)
+            }
+            UIEngine.schedule(0.05002) { animation = false }
             field = value
         }
 
@@ -308,16 +324,16 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                     offset.x = Mouse.getX() / scale + 6.0
                     offset.y = (Display.getHeight() - Mouse.getY()) / scale - 12.0
                 }
-                if (scrollable()) {
+                if (draggingStart != 0.0 && !Mouse.isButtonDown(0))
+                    draggingStart = 0.0
+                if (scrollable() && !animation) {
+                    val nowMouse = (Mouse.getY() / scale).toDouble()
+                    val dy =
+                        if (abs(draggingStart - nowMouse) < 1 || draggingStart == 0.0) 0.0 else nowMouse - draggingStart
                     val wheel = Mouse.getDWheel()
-                    val move = sign(-wheel.toDouble()).toInt() * 30
-                    if (wheel != 0 && scroll + move < scrollHeight() && scroll + move >= 0) {
-                        scroll += move
-                        container.offset.y -= move
-                    } else if (scroll < 0) {
-                        scroll = 0.0
-                        container.offset.y = 4 * headerPadding + headerHeight
-                    }
+                    val move = sign(-wheel.toDouble()).toInt() * 30.0 - dy * 1.6
+                    scroll = maxOf(0.0, minOf(scroll + move, scrollHeight()))
+                    if (dy != 0.0) draggingStart = nowMouse
                 }
             }
         }
