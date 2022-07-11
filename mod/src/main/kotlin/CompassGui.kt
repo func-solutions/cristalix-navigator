@@ -157,13 +157,13 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                 if (hovered && it.compassGame.description?.isNotEmpty() == true) {
                     val desc = it.compassGame.description!!
                     if (!hoverContainer.enabled) {
-                        hoverText.content = desc.joinToString("\n")
+                        hoverText.content = desc.joinToString("\n").replace("&", "§")
                         hoverContainer.enabled = true
                     }
                     hoverContainer.size.x =
                         clientApi.fontRenderer()
                             .getStringWidth(desc.maxByOrNull { it.length } ?: "")
-                            .toDouble() * hoverTextScale - 4
+                            .toDouble() * hoverTextScale + 4
                     hoverContainer.size.y =
                         hoverText.lineHeight * desc.count() * hoverTextScale + 6.0
                     hoverCenter.size.x = hoverContainer.size.x - 2
