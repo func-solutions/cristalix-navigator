@@ -49,13 +49,17 @@ fun loadTexture(urlString: String, info: RemoteTexture): CompletableFuture<Void>
     }
 
 fun load(url: String): CompletableFuture<Void> =
-    loadTexture(url, RemoteTexture(ResourceLocation.of(NAMESPACE, url.split("/").last()), createSha1(url)))
+    loadTexture(url, RemoteTexture(ResourceLocation.of(NAMESPACE, url.split("/").last()), getSha1Hex(url)))
 
-fun createSha1(data: String): String {
+fun getSha1Hex(clearString: String): String {
     return try {
-        MessageDigest.getInstance("SHA-1").apply {
-            update(data.toByteArray(charset("UTF-8")))
-        }.digest().joinToString { ((it and 0xff.toByte()) + 0x100).toString(16).substring(1) }
+        val messageDigest = MessageDigest.getInstance("SHA-1")
+        messageDigest.update(clearString.toByteArray(charset("UTF-8")))
+        StringBuilder().apply {
+            messageDigest.digest().forEach { byte ->
+                append(((byte and 0xff.toByte()) + 0x100).toString(16).substring(1))
+            }
+        }.toString()
     } catch (ignored: Exception) {
         ignored.printStackTrace()
         ""
