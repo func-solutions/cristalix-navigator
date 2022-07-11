@@ -121,12 +121,8 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         enabled = false
         +hoverCenter
 
-        beforeRender {
-            GlStateManager.disableDepth()
-        }
-        afterRender {
-            GlStateManager.enableDepth()
-        }
+        beforeRender { GlStateManager.disableDepth() }
+        afterRender { GlStateManager.enableDepth() }
     }
 
     fun getTextScale(): Double {
@@ -178,7 +174,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
             node.game.onHover {
                 if (hovered && it.compassGame.description?.isNotEmpty() == true) {
                     val desc = it.compassGame.description!!
-                    if (!hoverContainer.enabled) {
+                    if (!hoverContainer.enabled && !header.hovered) {
                         hoverText.content = desc.joinToString("\n").replace("&", "§")
                         hoverContainer.enabled = true
                     }
@@ -296,6 +292,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         +categoriesContainer
         beforeRender { GlStateManager.disableDepth() }
         afterRender { GlStateManager.enableDepth() }
+        onHover { if (hovered) hoverContainer.enabled = false }
     }
 
     fun resize() {

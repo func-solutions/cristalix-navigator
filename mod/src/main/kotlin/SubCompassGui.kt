@@ -9,8 +9,8 @@ class SubCompassGui(var parent: CompassGame) : ContextGui() {
 
     val spacing = 4.0
     val scalingBox = when (parent.subGames?.size!!) {
-        in 1..2 -> 0.75
-        in 1..4 -> 0.5
+        in 1..3 -> 0.75
+        in 1..6 -> 0.5
         else -> 0.38
     }
 
