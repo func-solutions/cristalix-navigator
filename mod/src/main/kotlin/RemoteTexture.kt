@@ -6,8 +6,11 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
+import java.security.MessageDigest
 import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
+import kotlin.experimental.and
+
 
 class RemoteTexture(
     @JvmField val location: ResourceLocation,
@@ -25,9 +28,7 @@ fun loadTexture(urlString: String, info: RemoteTexture): CompletableFuture<Void>
             val path = cacheDir.resolve(info.sha1)
 
             val image = try {
-                Files.newInputStream(path).use {
-                    ImageIO.read(it)
-                }
+                Files.newInputStream(path).use { ImageIO.read(it) }
             } catch (ex: IOException) {
                 val url = URL(urlString)
                 val bytes = url.openStream().readBytes()
@@ -48,4 +49,15 @@ fun loadTexture(urlString: String, info: RemoteTexture): CompletableFuture<Void>
     }
 
 fun load(url: String): CompletableFuture<Void> =
-    loadTexture(url, RemoteTexture(ResourceLocation.of(NAMESPACE, url.split("/").last()), "FUNC${url.hashCode()}FUNC"))
+    loadTexture(url, RemoteTexture(ResourceLocation.of(NAMESPACE, url.split("/").last()), createSha1(url)))
+
+fun createSha1(data: String): String {
+    return try {
+        MessageDigest.getInstance("SHA-1").apply {
+            update(data.toByteArray(charset("UTF-8")))
+        }.digest().joinToString { ((it and 0xff.toByte()) + 0x100).toString(16).substring(1) }
+    } catch (ignored: Exception) {
+        ignored.printStackTrace()
+        ""
+    }
+}
