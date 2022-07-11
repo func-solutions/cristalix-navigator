@@ -1,5 +1,4 @@
 import dev.xdark.clientapi.opengl.GlStateManager
-import dev.xdark.clientapi.resource.ResourceLocation
 import ru.cristalix.uiengine.UIEngine
 import ru.cristalix.uiengine.UIEngine.clientApi
 import ru.cristalix.uiengine.element.CarvedRectangle
@@ -64,7 +63,9 @@ class CompassNode(var compassGame: CompassGame) {
 
             onMouseUp {
                 if (button != MouseButton.LEFT) return@onMouseUp
-                if (compassGame.subGames?.isEmpty() != false || compassGame.realmType == "HUB") mod.join(compassGame.realmType ?: "HUB")
+                if (compassGame.subGames?.isEmpty() != false || compassGame.realmType == "HUB") mod.join(
+                    compassGame.realmType ?: "HUB"
+                )
                 else clientApi.chat().sendChatMessage("/hc-get-games-by-type " + compassGame.realmType)
             }
 
@@ -98,8 +99,11 @@ class CompassNode(var compassGame: CompassGame) {
             }
         }
         var on = false
+        var animation = false
 
         beforeRender {
+            if (animation) return@beforeRender
+
             val onHeader = compassGui?.header?.hovered == true
             if ((onHeader && on) || !hovered) {
                 on = false
@@ -107,8 +111,11 @@ class CompassNode(var compassGame: CompassGame) {
             } else if (!on && hovered && !onHeader) {
                 on = true
                 hint.animate(0.2, Easings.CUBIC_OUT) { color.alpha = 0.82 }
-            }
+            } else return@beforeRender
 
+            animation = true
+
+            UIEngine.schedule(0.21) { animation = false }
             hintText.enabled = on
             if (compassGame.parent != null)
                 return@beforeRender

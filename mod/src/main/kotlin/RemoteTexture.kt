@@ -11,7 +11,6 @@ import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
 import kotlin.experimental.and
 
-
 class RemoteTexture(
     @JvmField val location: ResourceLocation,
     @JvmField val sha1: String,

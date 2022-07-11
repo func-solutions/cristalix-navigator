@@ -93,13 +93,14 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
 
     var scroll = 0.0
         set(value) {
+            if (animation) return
             animation = true
             scrollElement.animate(0.05, Easings.QUINT_BOTH) {
                 container.offset.y = 4 * headerPadding + headerHeight - value
                 scrollElement.offset.y =
                     value / scrollHeight() * (overlayContext.size.y - 4 * headerPadding - scrollElement.size.y)
             }
-            UIEngine.schedule(0.05002) { animation = false }
+            UIEngine.schedule(0.06) { animation = false }
             field = value
         }
 
@@ -321,21 +322,27 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                 mod.join(games.firstOrNull()?.compassGame?.realmType ?: "HUB")
         }
 
+        val resolution = clientApi.resolution()
+
         mod.registerHandler<GameLoop> {
             if (openned) {
-                val scale = clientApi.resolution().scaleFactor
-                hoverContainer.run {
-                    offset.x = Mouse.getX() / scale + 6.0
-                    offset.y = (Display.getHeight() - Mouse.getY()) / scale - 12.0
-                }
+                val scale = resolution.scaleFactor
+                val mouseY = Mouse.getY()
+                hoverContainer.offset.x = Mouse.getX() / scale + 6.0
+                hoverContainer.offset.y = (Display.getHeight() - mouseY) / scale - 12.0
+
                 if (draggingStart != 0.0 && !Mouse.isButtonDown(0))
                     draggingStart = 0.0
                 if (scrollable() && !animation) {
-                    val nowMouse = (Mouse.getY() / scale).toDouble()
+                    val nowMouse = (mouseY / scale).toDouble()
                     val dy =
                         if (abs(draggingStart - nowMouse) < 1 || draggingStart == 0.0) 0.0 else nowMouse - draggingStart
+
                     val wheel = Mouse.getDWheel()
-                    val move = sign(-wheel.toDouble()).toInt() * 30.0 - dy * 1.6
+
+                    if (dy == 0.0 && wheel == 0) return@registerHandler
+
+                    val move = sign(-wheel.toDouble()).toInt() * 75.0 - dy * 1.8
                     scroll = maxOf(0.0, minOf(scroll + move, scrollHeight()))
                     if (dy != 0.0) draggingStart = nowMouse
                 }
