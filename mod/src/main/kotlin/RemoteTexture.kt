@@ -19,7 +19,8 @@ class RemoteTexture(
 val NAMESPACE = "cache/animation"
 private val cacheDir = Paths.get("$NAMESPACE/")
 
-fun loadTexture(urlString: String, info: RemoteTexture): CompletableFuture<Void> =
+fun loadTexture(urlString: String, info: RemoteTexture): CompletableFuture<ResourceLocation> {
+    val future = CompletableFuture<ResourceLocation>()
     CompletableFuture.runAsync {
         try {
             val cacheDir = cacheDir
@@ -39,15 +40,16 @@ fun loadTexture(urlString: String, info: RemoteTexture): CompletableFuture<Void>
             val renderEngine = api.renderEngine()
             mc.execute {
                 renderEngine.loadTexture(info.location, renderEngine.newImageTexture(image, false, false))
-                return@execute
+                future.complete(info.location)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
-            throw e
+            future.completeExceptionally(e)
         }
     }
+    return future
+}
 
-fun load(url: String): CompletableFuture<Void> =
+fun load(url: String): CompletableFuture<ResourceLocation> =
     loadTexture(url, RemoteTexture(ResourceLocation.of(NAMESPACE, url.split("/").last()), getSha1Hex(url)))
 
 fun getSha1Hex(clearString: String): String {

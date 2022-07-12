@@ -59,10 +59,10 @@ class App : KotlinMod() {
                     sub.icon = game.icon
                 }
 
-                load(game.icon ?: return@forEach).thenAccept {
+                load(game.icon ?: return@forEach).thenAccept { location ->
                     compassGui?.games?.find { it.compassGame.realmType == game.realmType }?.let {
-                        it.compassGame.image = ResourceLocation.of(NAMESPACE, game.icon?.split("/")?.last())
-                        it.image.textureLocation = it.compassGame.image
+                        it.compassGame.image = location
+                        it.image.textureLocation = location
                     }
                 }
             }
