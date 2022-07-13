@@ -1,6 +1,7 @@
 import dev.xdark.clientapi.resource.ResourceLocation
 
 data class CompassGame(
+    val name: String? = null,
     val title: String? = null,
     var icon: String? = null,
     val realmType: String? = null,
@@ -21,5 +22,4 @@ data class CompassGame(
         compassGui?.games?.find { it.compassGame == this }?.online?.content = "Онлайн $value"
         field = value
     }
-
 }

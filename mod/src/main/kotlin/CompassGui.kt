@@ -138,7 +138,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
     }
 
     fun redraw(additionalSort: (CompassGame) -> Int = { -2000 }) {
-        compass.games.filter { playerData?.favorite?.contains(it.realmType) ?: false }
+        compass.games.filter { playerData?.favorite?.contains(it.depend ?: it.realmType) ?: false }
             .forEach { it.starred = true }
 
         container.offset.y = 4 * headerPadding + headerHeight
@@ -321,7 +321,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
             if (code == Keyboard.KEY_ESCAPE)
                 openned = false
             else if (code == Keyboard.KEY_RETURN)
-                mod.join(games.firstOrNull()?.compassGame?.realmType ?: "HUB")
+                mod.join(games.firstOrNull()?.compassGame ?: return@onKeyTyped)
         }
 
         mod.registerHandler<GameLoop> {

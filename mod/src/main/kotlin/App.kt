@@ -61,12 +61,7 @@ class App : KotlinMod() {
                 }
 
                 load(game.icon ?: return@forEach).thenAccept { location ->
-                    val realm = game.realmType
-
-                    compassGui?.games?.find {
-                        (it.compassGame.depend == null && it.compassGame.realmType == realm)
-                                || (it.compassGame.depend == realm)
-                    }?.let {
+                    compassGui?.games?.filter { it.compassGame.icon == game.icon }?.forEach {
                         it.compassGame.image = location
                         it.image.textureLocation = location
                     }
@@ -85,15 +80,15 @@ class App : KotlinMod() {
         registerChannel("hc:online") {
             if (compassGui == null) return@registerChannel
 
+            val data = readString()
+                .replace("\"", "")
+                .split(",")
+                .map { it.split(":") }
+
             compass.games.forEach { game ->
-                readString()
-                    .replace("\"", "")
-                    .split(",")
-                    .map { it.split(":") }
-                    .forEach { entry ->
-                        if ((game.depend == null && game.realmType == entry[0]) || game.depend == entry[0])
-                            game.online = entry[1].toInt()
-                    }
+                data.first { (game.depend == null && game.realmType == it[0]) || game.depend == it[0] }.let {
+                    game.online = it[1].toInt()
+                }
             }
         }
 
@@ -102,7 +97,7 @@ class App : KotlinMod() {
             val game = gson.fromJson(data, SubGames::class.java)
 
             compassGui?.games?.find { it.compassGame.realmType == game.realmType }?.let {
-                it.compassGame.subGames = game.games?.toList()?.onEach { current ->
+                it.compassGame.subGames = game.games?.sortedBy { it.realmType }?.onEach { current ->
                     current.parent = it.compassGame
                     current.image = it.image.textureLocation ?: loading
                     current.backgroundColor = it.compassGame.backgroundColor
@@ -115,6 +110,7 @@ class App : KotlinMod() {
 
     fun hexToColor(hex: Int) = Color(hex and 0xFF0000 shr 16, hex and 0xFF00 shr 8, hex and 0xFF)
 
-    fun join(realm: String) = UIEngine.clientApi.chat().sendChatMessage("/hc-join-to $realm")
+    fun join(game: CompassGame) = UIEngine.clientApi.chat()
+        .sendChatMessage("/hc-join-to ${if (game.parent == null) game.name ?: "HUB" else game.realmType ?: "HUB"}")
 
 }
