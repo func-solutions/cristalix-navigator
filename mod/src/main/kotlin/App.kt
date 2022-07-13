@@ -60,8 +60,6 @@ class App : KotlinMod() {
                     sub.icon = game.icon
                 }
 
-                println(game.depend)
-
                 load(game.icon ?: return@forEach).thenAccept { location ->
                     val realm = game.realmType
 

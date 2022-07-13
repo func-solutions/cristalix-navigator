@@ -83,11 +83,11 @@ class CompassNode(var compassGame: CompassGame) {
                     if (compassGame.starred) {
                         compassGame.starred = false
                         clientApi.chat().sendChatMessage("/hc-remove-favorite ${compassGame.realmType}")
-                        compassGame.realmType?.let { playerData?.removeFavorite(it) }
+                        compassGame.realmType?.let { playerData?.removeFavorite(compassGame.depend ?: it) }
                     } else {
                         compassGame.starred = true
                         clientApi.chat().sendChatMessage("/hc-add-favorite ${compassGame.realmType}")
-                        compassGame.realmType?.let { playerData?.addFavorite(it) }
+                        compassGame.realmType?.let { playerData?.addFavorite(compassGame.depend ?: it) }
                     }
                     animate(0.1) {
                         color = if (compassGame.starred) Color(255, 215, 0, 1.0) else WHITE
