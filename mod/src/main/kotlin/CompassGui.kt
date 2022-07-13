@@ -178,6 +178,8 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                     val desc = it.compassGame.description!!
                     if (!hoverContainer.enabled && !header.hovered) {
                         hoverText.content = desc.joinToString("\n").replace("&", "§")
+                        if (hoverText.content.endsWith("\n"))
+                            hoverText.content = hoverText.content.dropLast(2)
                         hoverContainer.enabled = true
                     }
                     hoverContainer.size.x =
@@ -185,7 +187,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                             .getStringWidth(desc.maxByOrNull { it.length } ?: "")
                             .toDouble() * hoverTextScale + 4
                     hoverContainer.size.y =
-                        hoverText.lineHeight * desc.count() * hoverTextScale + 6.0
+                        hoverText.lineHeight * desc.count() * hoverTextScale + 2.0
                     hoverCenter.size.x = hoverContainer.size.x - 2
                     hoverCenter.size.y = hoverContainer.size.y - 2
                 } else {
@@ -322,14 +324,16 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                 mod.join(games.firstOrNull()?.compassGame?.realmType ?: "HUB")
         }
 
-        val resolution = clientApi.resolution()
-
         mod.registerHandler<GameLoop> {
             if (openned) {
-                val scale = resolution.scaleFactor
+                val scale = clientApi.resolution().scaleFactor
                 val mouseY = Mouse.getY()
-                hoverContainer.offset.x = Mouse.getX() / scale + 6.0
-                hoverContainer.offset.y = (Display.getHeight() - mouseY) / scale - 12.0
+                val mouseX = Mouse.getX()
+
+                val out = mouseX / scale + hoverContainer.size.x + 10 > overlayContext.size.x
+
+                hoverContainer.offset.x = mouseX / scale + if (out) -(6.0 + hoverContainer.size.x) else 6.0
+                hoverContainer.offset.y = (Display.getHeight() - mouseY) / scale - 6.0
 
                 if (draggingStart != 0.0 && !Mouse.isButtonDown(0))
                     draggingStart = 0.0

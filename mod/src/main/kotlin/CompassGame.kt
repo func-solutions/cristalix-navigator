@@ -9,6 +9,7 @@ data class CompassGame(
     var backgroundColor: Int = 0,
     var starred: Boolean = false,
     var dynamic: Boolean = false,
+    var depend: String? = null,
     var image: ResourceLocation = loading,
     var description: List<String>? = listOf()
 ) {

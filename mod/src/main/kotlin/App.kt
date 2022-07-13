@@ -1,8 +1,5 @@
 import com.google.gson.Gson
-import dev.xdark.clientapi.event.input.KeyPress
-import dev.xdark.clientapi.resource.ResourceLocation
 import io.netty.buffer.ByteBuf
-import org.lwjgl.input.Keyboard
 import ru.cristalix.clientapi.KotlinMod
 import ru.cristalix.uiengine.UIEngine
 import ru.cristalix.uiengine.utility.Color
@@ -23,6 +20,8 @@ class App : KotlinMod() {
         compassGui?.open()
     }
 
+    var block = false
+
     override fun onEnable() {
         UIEngine.initialize(this)
         mod = this
@@ -30,7 +29,9 @@ class App : KotlinMod() {
         val gson = Gson()
 
         fun open() {
-            if (compassGui?.openned == true) return
+            block = true
+            UIEngine.schedule(1) { block = false }
+
             if (compassGui == null) UIEngine.clientApi.chat().sendChatMessage("/hc-get-games")
             else {
                 UIEngine.clientApi.chat().sendChatMessage("/hc-get-online")
@@ -38,7 +39,7 @@ class App : KotlinMod() {
             }
         }
 
-        registerHandler<KeyPress> { if (key == Keyboard.KEY_GRAVE) open() }
+        //registerHandler<KeyPress> { if (key == Keyboard.KEY_GRAVE) open() }
         registerChannel("func:navigator") { open() }
 
         fun ByteBuf.readString(): String {
@@ -59,8 +60,15 @@ class App : KotlinMod() {
                     sub.icon = game.icon
                 }
 
+                println(game.depend)
+
                 load(game.icon ?: return@forEach).thenAccept { location ->
-                    compassGui?.games?.find { it.compassGame.realmType == game.realmType }?.let {
+                    val realm = game.realmType
+
+                    compassGui?.games?.find {
+                        (it.compassGame.depend == null && it.compassGame.realmType == realm)
+                                || (it.compassGame.depend == realm)
+                    }?.let {
                         it.compassGame.image = location
                         it.image.textureLocation = location
                     }
@@ -85,7 +93,7 @@ class App : KotlinMod() {
                     .split(",")
                     .map { it.split(":") }
                     .forEach { entry ->
-                        if (game.realmType == entry[0])
+                        if ((game.depend == null && game.realmType == entry[0]) || game.depend == entry[0])
                             game.online = entry[1].toInt()
                     }
             }
