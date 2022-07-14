@@ -1,4 +1,5 @@
 import com.google.gson.Gson
+import dev.xdark.clientapi.event.chat.ChatSend
 import io.netty.buffer.ByteBuf
 import ru.cristalix.clientapi.KotlinMod
 import ru.cristalix.uiengine.UIEngine
@@ -21,6 +22,7 @@ class App : KotlinMod() {
     }
 
     var block = false
+    var stop = false
 
     override fun onEnable() {
         UIEngine.initialize(this)
@@ -29,13 +31,21 @@ class App : KotlinMod() {
         val gson = Gson()
 
         fun open() {
+            if (stop) return
             block = true
-            UIEngine.schedule(1) { block = false }
+            UIEngine.schedule(0.2) { block = false }
 
             if (compassGui == null) UIEngine.clientApi.chat().sendChatMessage("/hc-get-games")
             else {
                 UIEngine.clientApi.chat().sendChatMessage("/hc-get-online")
                 openCompass()
+            }
+        }
+
+        registerHandler<ChatSend> {
+            if (message.startsWith("/func:navigator-stop")) {
+                compassGui = null
+                stop = true
             }
         }
 
@@ -49,6 +59,8 @@ class App : KotlinMod() {
         }
 
         registerChannel("hc:games") {
+            if (stop) return@registerChannel
+
             compass = gson.fromJson(readString(), Compass::class.java)
 
             if (compassGui == null) compassGui = CompassGui(compass)
@@ -73,12 +85,14 @@ class App : KotlinMod() {
 
 
         registerChannel("hc:player") {
+            if (stop) return@registerChannel
+
             playerData = gson.fromJson(readString(), PlayerData::class.java)
             compassGui?.redraw()
         }
 
         registerChannel("hc:online") {
-            if (compassGui == null) return@registerChannel
+            if (compassGui == null || stop) return@registerChannel
 
             val data = readString()
                 .replace("\"", "")
@@ -93,8 +107,9 @@ class App : KotlinMod() {
         }
 
         registerChannel("hc:games-by-type") {
-            val data = readString()
-            val game = gson.fromJson(data, SubGames::class.java)
+            if (stop) return@registerChannel
+
+            val game = gson.fromJson(readString(), SubGames::class.java)
 
             compassGui?.games?.find { it.compassGame.realmType == game.realmType }?.let {
                 it.compassGame.subGames = game.games?.sortedBy { it.realmType }?.onEach { current ->

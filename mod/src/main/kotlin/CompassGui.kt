@@ -105,20 +105,28 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         }
 
     private val hoverTextScale = 0.5 + 0.25 + 0.125
+    /*private val hoverTitle = text {
+        shadow = true
+        lineHeight += 5
+        scale = V3(0.75, 0.75, 0.75)
+        color = WHITE
+        offset = V3(4.0, 4.0)
+    }*/
     private val hoverText = text {
         shadow = true
         lineHeight += 2
         scale = V3(0.75, 0.75, 0.75)
         color = WHITE
-        offset = V3(4.0, 4.0)
+        offset = V3(4.0, 4.0)// + hoverTitle.lineHeight)
     }
     val hoverCenter = carved {
-        color = Color(42, 102, 189, 1.0)
+        color = Color(54, 54, 54, 1.0)
         offset = V3(1.0, 1.0)
+        //+hoverTitle
         +hoverText
     }
     val hoverContainer = carved {
-        color = Color(0, 0, 0, 0.38)
+        color = Color(75, 75, 75, 0.38)
         enabled = false
         +hoverCenter
 
@@ -174,9 +182,11 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                 contentBox.offset.y = icon
             }
             node.game.onHover {
-                if (hovered && it.compassGame.description?.isNotEmpty() == true) {
-                    val desc = it.compassGame.description!!
+                val game = it.compassGame
+                if (hovered && game.description?.isNotEmpty() == true) {
+                    val desc = game.description!!
                     if (!hoverContainer.enabled && !header.hovered) {
+                        //hoverTitle.content = game.title + " §b" + game.online
                         hoverText.content = desc.joinToString("\n").replace("&", "§")
                         if (hoverText.content.endsWith("\n"))
                             hoverText.content = hoverText.content.dropLast(2)
@@ -187,7 +197,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                             .getStringWidth(desc.maxByOrNull { it.length } ?: "")
                             .toDouble() * hoverTextScale + 4
                     hoverContainer.size.y =
-                        hoverText.lineHeight * desc.count() * hoverTextScale + 2.0
+                        hoverText.lineHeight * desc.count() * hoverTextScale + 2.0 //+ hoverTitle.lineHeight * hoverTextScale
                     hoverCenter.size.x = hoverContainer.size.x - 2
                     hoverCenter.size.y = hoverContainer.size.y - 2
                 } else {
