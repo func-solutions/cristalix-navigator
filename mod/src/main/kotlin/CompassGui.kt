@@ -133,7 +133,7 @@ class CompassGui(val data: Compass, category: String = "Игры") : ContextGui(
         +hoverTags
     }
     val hoverContainer = carved {
-        color = Color(75, 75, 75, 0.38)
+        color = Color(75, 75, 75, 1.0)
         enabled = false
         +hoverCenter
 
@@ -165,8 +165,8 @@ class CompassGui(val data: Compass, category: String = "Игры") : ContextGui(
         var pregames = activeCategory.games.invoke()
         if (search.contentText.content.replace("|", "").isNotEmpty())
             pregames = pregames.sortedBy { additionalSort.invoke(it) }.take(6 + (Math.random() * 5).toInt())
-        games = pregames.map { CompassNode(it) }.onEach {
-            val node = it.apply {
+        games = pregames.map { CompassNode(it) }.onEach { compassNode ->
+            val node = compassNode.apply {
                 val x = header.size.x / columns - padding * (columns.toFloat() - 1) / columns.toFloat() - 0.1
                 val y = fielRelativeHeight / 160.0 * x
                 val icon = y * 148.0 / fielRelativeHeight
@@ -177,15 +177,15 @@ class CompassGui(val data: Compass, category: String = "Игры") : ContextGui(
                 image.size.y = icon
 
                 image.textureLocation =
-                    if (it.compassGame.parent != null && image.textureLocation == loading) it.compassGame.parent?.image
-                    else it.compassGame.image
+                    if (compassNode.compassGame.parent != null && image.textureLocation == loading) compassNode.compassGame.parent?.image
+                    else compassNode.compassGame.image
 
                 contentBox.size.y = y - icon
                 contentBox.size.x = x
                 contentBox.offset.y = icon
             }
             node.game.onHover {
-                val game = it.compassGame
+                val game = compassNode.compassGame
                 if (hovered && game.description?.isNotEmpty() == true) {
                     val desc = game.description!!
 
@@ -193,7 +193,7 @@ class CompassGui(val data: Compass, category: String = "Игры") : ContextGui(
                         clientApi.fontRenderer()
                             .getStringWidth(desc.maxByOrNull { it.length } ?: "")
                             .toDouble() * hoverTextScale + 4
-                    val padding = 16.0
+                    val padding = 17.0
                     hoverContainer.size.y =
                         hoverText.lineHeight * desc.count() * hoverTextScale + 2.0 + hoverTitle.lineHeight * hoverTextScale + padding
                     hoverTags.offset.y = hoverContainer.size.y - padding
@@ -207,11 +207,7 @@ class CompassGui(val data: Compass, category: String = "Игры") : ContextGui(
                             hoverText.content = hoverText.content.dropLast(2)
 
                         hoverTags.children.clear()
-                        game.createTags()?.let {
-                            it.forEach { tag ->
-                                hoverTags.addChild(tag)
-                            }
-                        }
+                        game.createTags()?.let { it.forEach { tag -> hoverTags.addChild(tag) } }
 
                         hoverTags.size = V3(hoverCenter.size.x, hoverCenter.size.y / 4)
                         hoverTags.update()

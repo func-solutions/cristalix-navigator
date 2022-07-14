@@ -42,7 +42,7 @@ data class CompassGame(
             }
             color = it.getBackground()
             size = V3(
-                UIEngine.clientApi.fontRenderer().getStringWidth(content.content) * scaled + 6,
+                UIEngine.clientApi.fontRenderer().getStringWidth(content.content) * scaled + 8,
                 content.lineHeight + 2
             )
         }
