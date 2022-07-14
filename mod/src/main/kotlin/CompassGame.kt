@@ -7,6 +7,7 @@ data class CompassGame(
     val realmType: String? = null,
     var lobby: Boolean = false,
     var subGames: List<CompassGame>? = null,
+    var tags: List<String>? = listOf(),
     var backgroundColor: Int = 0,
     var starred: Boolean = false,
     var dynamic: Boolean = false,
