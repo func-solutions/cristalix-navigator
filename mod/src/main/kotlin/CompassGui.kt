@@ -42,7 +42,7 @@ val headerPadding = 5.0
 val columns = 6
 val fielRelativeHeight = 198.0 + 16
 
-class CompassGui(compass: Compass, category: String = "Игры") : ContextGui() {
+class CompassGui(val data: Compass, category: String = "Игры") : ContextGui() {
     var updateTagsState = true
     var activeCategory = categories.first { it.hint.content == category }
     var games = listOf<CompassNode>()
@@ -104,26 +104,33 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
             field = value
         }
 
+    private val hoverTags = flex {
+        overflowWrap = true
+        flexSpacing = 2.0
+        offset.x += 4
+    }
+
     private val hoverTextScale = 0.5 + 0.25 + 0.125
-    /*private val hoverTitle = text {
+    private val hoverTitle = text {
         shadow = true
         lineHeight += 5
         scale = V3(0.75, 0.75, 0.75)
         color = WHITE
         offset = V3(4.0, 4.0)
-    }*/
+    }
     private val hoverText = text {
         shadow = true
         lineHeight += 2
         scale = V3(0.75, 0.75, 0.75)
         color = WHITE
-        offset = V3(4.0, 4.0)// + hoverTitle.lineHeight)
+        offset = V3(4.0, 4.0 + hoverTitle.lineHeight)
     }
     val hoverCenter = carved {
         color = Color(54, 54, 54, 1.0)
         offset = V3(1.0, 1.0)
-        //+hoverTitle
+        +hoverTitle
         +hoverText
+        +hoverTags
     }
     val hoverContainer = carved {
         color = Color(75, 75, 75, 0.38)
@@ -146,9 +153,8 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
     }
 
     fun redraw(additionalSort: (CompassGame) -> Int = { -2000 }) {
-        compass.games.filter { playerData?.favorite?.contains(it.depend ?: it.realmType) ?: false }
+        data.games.filter { playerData?.favorite?.contains(it.depend ?: it.realmType) ?: false }
             .forEach { it.starred = true }
-
         container.offset.y = 4 * headerPadding + headerHeight
         scroll = 0.0
         scrollContainer.size.y = overlayContext.size.y - 4 * headerPadding
@@ -156,12 +162,9 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
 
         val loadedGames = games
         loadedGames.forEach { container.removeChild(it.game) }
-
         var pregames = activeCategory.games.invoke()
-
         if (search.contentText.content.replace("|", "").isNotEmpty())
             pregames = pregames.sortedBy { additionalSort.invoke(it) }.take(6 + (Math.random() * 5).toInt())
-
         games = pregames.map { CompassNode(it) }.onEach {
             val node = it.apply {
                 val x = header.size.x / columns - padding * (columns.toFloat() - 1) / columns.toFloat() - 0.1
@@ -185,21 +188,36 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                 val game = it.compassGame
                 if (hovered && game.description?.isNotEmpty() == true) {
                     val desc = game.description!!
-                    if (!hoverContainer.enabled && !header.hovered) {
-                        //hoverTitle.content = game.title + " §b" + game.online
-                        hoverText.content = desc.joinToString("\n").replace("&", "§")
-                        if (hoverText.content.endsWith("\n"))
-                            hoverText.content = hoverText.content.dropLast(2)
-                        hoverContainer.enabled = true
-                    }
+
                     hoverContainer.size.x =
                         clientApi.fontRenderer()
                             .getStringWidth(desc.maxByOrNull { it.length } ?: "")
                             .toDouble() * hoverTextScale + 4
+                    val padding = 16.0
                     hoverContainer.size.y =
-                        hoverText.lineHeight * desc.count() * hoverTextScale + 2.0 //+ hoverTitle.lineHeight * hoverTextScale
+                        hoverText.lineHeight * desc.count() * hoverTextScale + 2.0 + hoverTitle.lineHeight * hoverTextScale + padding
+                    hoverTags.offset.y = hoverContainer.size.y - padding
                     hoverCenter.size.x = hoverContainer.size.x - 2
                     hoverCenter.size.y = hoverContainer.size.y - 2
+
+                    if (!hoverContainer.enabled && !header.hovered) {
+                        hoverTitle.content = game.title?.replace("\n", " ") + " §b" + game.online
+                        hoverText.content = desc.joinToString("\n").replace("&", "§")
+                        if (hoverText.content.endsWith("\n"))
+                            hoverText.content = hoverText.content.dropLast(2)
+
+                        hoverTags.children.clear()
+                        game.createTags()?.let {
+                            it.forEach { tag ->
+                                hoverTags.addChild(tag)
+                            }
+                        }
+
+                        hoverTags.size = V3(hoverCenter.size.x, hoverCenter.size.y / 4)
+                        hoverTags.update()
+
+                        hoverContainer.enabled = true
+                    }
                 } else {
                     hoverContainer.enabled = false
                 }
@@ -267,7 +285,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
         flexSpacing = padding
         overflowWrap = true
 
-        if (compass.banners.isNotEmpty()) {
+        /*if (compass.banners.isEmpty()) {
             val bannerText = text {
                 align = LEFT
                 origin = LEFT
@@ -292,7 +310,7 @@ class CompassGui(compass: Compass, category: String = "Игры") : ContextGui()
                 size = banner!!.size
                 size.y += headerPadding
             }
-        }
+        }*/
     }
 
     val header = +carved {
