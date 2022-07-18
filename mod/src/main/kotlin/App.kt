@@ -96,11 +96,13 @@ class App : KotlinMod() {
 
             val data = readString()
                 .replace("\"", "")
+                .replace("}", "")
+                .replace("{", "")
                 .split(",")
                 .map { it.split(":") }
 
             compass.games.forEach { game ->
-                data.first { (game.depend == null && game.realmType == it[0]) || game.depend == it[0] }.let {
+                data.firstOrNull { (game.depend.isNullOrEmpty() && game.realmType == it[0]) || game.depend == it[0] }?.let {
                     game.online = it[1].toInt()
                 }
             }
