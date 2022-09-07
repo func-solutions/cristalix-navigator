@@ -35,7 +35,7 @@ val categories = listOf(
     Category(
         "Хабы",
         "Ой...\n\nА где все хабы?"
-    ) { compass.games.find { it.realmType == "HUB" }?.subGames?.sortedBy { -it.online } ?: listOf() }
+    ) { compass.games.find { it.realmType == "HUB" }?.subGames?.sortedBy { it.title?.drop(5)?.toInt() } ?: listOf() }
 )
 val headerHeight = 22.0
 val headerPadding = 5.0

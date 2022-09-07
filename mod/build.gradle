@@ -32,4 +32,11 @@ bundle {
     author 'func'
     keep('class ru.cristalix.data.** { *; }')
     keep('class ru.cristalix.** { *; }')
+    doLast {
+        copy {
+            from "$buildDir/libs/mod-bundle.jar"
+            rename { 'navigator-bundle.jar' }
+            into "$buildDir/libs/"
+        }
+    }
 }
