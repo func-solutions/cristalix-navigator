@@ -421,11 +421,7 @@ class CompassGui(val data: Compass, category: String = "Игры") : ContextGui(
             }
             val searchText = search.contentText.content
                 .replace("|", "")
-                .replace(" ", "")
                 .lowercase()
-                .replace("дж", "j")
-                .replace("eve", "иве")
-                .replace("при", "pri")
 
             if (search.typing && symbolsCount != searchText.length) {
                 symbolsCount = searchText.length
@@ -444,6 +440,9 @@ class CompassGui(val data: Compass, category: String = "Игры") : ContextGui(
                             title.contains(english.toString()) ||
                             title.contains(search.contentText.content)
                         ) 7500 * (search.contentText.content.length - 1) else 0
+
+                    sum += if (game.keywords?.contains(searchText) == true) 100000 else 0
+
                     search.contentText.content.lowercase().forEachIndexed { index, c ->
                         if (index >= title.length)
                             return@forEachIndexed

@@ -4,6 +4,7 @@ import ru.cristalix.uiengine.utility.CENTER
 import ru.cristalix.uiengine.utility.V3
 import ru.cristalix.uiengine.utility.carved
 import ru.cristalix.uiengine.utility.text
+import javax.swing.text.StyleConstants.getBackground
 
 data class CompassGame(
     val name: String? = null,
@@ -13,6 +14,7 @@ data class CompassGame(
     var lobby: Boolean = false,
     var subGames: List<CompassGame>? = null,
     val tags: List<String>? = null,
+    val keywords: Set<String>? = null,
     var backgroundColor: Int = 0,
     var starred: Boolean = false,
     var dynamic: Boolean = false,
