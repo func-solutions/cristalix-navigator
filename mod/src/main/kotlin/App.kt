@@ -63,6 +63,13 @@ class App : KotlinMod() {
 
             compass = gson.fromJson(readString(), Compass::class.java)
 
+            compass.banners = listOf(
+                CompassBanner(
+                    "Оор",
+                    "cache/animation:banner.png"
+                )
+            )
+
             if (compassGui == null) compassGui = CompassGui(compass)
 
             compass.games.forEach { game ->

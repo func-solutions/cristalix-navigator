@@ -1,14 +1,12 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.6.20' apply false
+    id 'org.jetbrains.kotlin.jvm' version '1.6.21'
     id 'dev.implario.bundler' version '4.0.1'
 }
 
-apply plugin: 'kotlin'
-
 dependencies {
-    implementation 'ru.cristalix:client-api:live-SNAPSHOT'
+    compileOnly 'ru.cristalix:client-api:foranelfer-SNAPSHOT'
     implementation 'ru.cristalix:uiengine:4.87-SNAPSHOT'
-    implementation 'ru.cristalix:client-sdk:live-SNAPSHOT'
+    implementation 'ru.cristalix:client-sdk:foranelfer-SNAPSHOT'
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {

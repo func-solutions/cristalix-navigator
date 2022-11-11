@@ -2,6 +2,7 @@ import dev.xdark.clientapi.event.lifecycle.GameLoop
 import dev.xdark.clientapi.event.render.ScaleChange
 import dev.xdark.clientapi.event.window.WindowResize
 import dev.xdark.clientapi.opengl.GlStateManager
+import dev.xdark.clientapi.resource.ResourceLocation
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.Display
@@ -9,7 +10,6 @@ import ru.cristalix.clientapi.JavaMod.loadTextureFromJar
 import ru.cristalix.uiengine.UIEngine
 import ru.cristalix.uiengine.UIEngine.clientApi
 import ru.cristalix.uiengine.UIEngine.overlayContext
-import ru.cristalix.uiengine.element.CarvedRectangle
 import ru.cristalix.uiengine.element.ContextGui
 import ru.cristalix.uiengine.element.RectangleElement
 import ru.cristalix.uiengine.eventloop.animate
@@ -43,6 +43,7 @@ val columns = 6
 val fielRelativeHeight = 198.0 + 16
 
 class CompassGui(val data: Compass, category: String = "Игры") : ContextGui() {
+
     var updateTagsState = true
     var activeCategory = categories.first { it.hint.content == category }
     var games = listOf<CompassNode>()
@@ -271,7 +272,7 @@ class CompassGui(val data: Compass, category: String = "Игры") : ContextGui(
     val padding = 4.0
 
     var bannerContainer: RectangleElement? = null
-    var banner: CarvedRectangle? = null
+    var banner: RectangleElement? = null
 
     val container = +flex {
         align = TOP
@@ -281,7 +282,8 @@ class CompassGui(val data: Compass, category: String = "Игры") : ContextGui(
         flexSpacing = padding
         overflowWrap = true
 
-        /*if (compass.banners.isEmpty()) {
+        if (compass.banners.isNotEmpty()) {
+
             val bannerText = text {
                 align = LEFT
                 origin = LEFT
@@ -292,21 +294,23 @@ class CompassGui(val data: Compass, category: String = "Игры") : ContextGui(
                 shadow = true
             }
 
-            banner = carved {
-                carveSize = 2.0
-                color = Color(100, 100, 100)
+            banner = rectangle {
+                color = WHITE
                 size.y =
                     (headerSizeX / columns - padding * (columns.toFloat() - 1) / columns.toFloat() - 0.1) / 148.0 * fielRelativeHeight
                 size.x = headerSizeX
+                textureLocation = ResourceLocation.of("cache/animation", "banner.png")
                 +bannerText
             }
 
-            bannerContainer = +rectangle {
+            bannerContainer = rectangle {
                 +banner!!
                 size = banner!!.size
                 size.y += headerPadding
             }
-        }*/
+       }
+
+        +bannerContainer!!
     }
 
     val header = +carved {
@@ -326,6 +330,7 @@ class CompassGui(val data: Compass, category: String = "Игры") : ContextGui(
     fun resize() {
         header.size.x = overlayContext.size.x * 0.6
         container.size.x = header.size.x
+
         if (compass.banners.isNotEmpty()) {
             banner!!.size.x = header.size.x
             banner!!.size.y =
@@ -333,6 +338,7 @@ class CompassGui(val data: Compass, category: String = "Игры") : ContextGui(
             bannerContainer!!.size = banner!!.size
             bannerContainer!!.size.y += headerPadding
         }
+
         redraw()
     }
 
