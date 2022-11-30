@@ -13,5 +13,5 @@ pluginManagement {
 }
 
 
-rootProject.name = 'cristalix-navigator'
+rootProject.name = 'navigator'
 include 'mod'
