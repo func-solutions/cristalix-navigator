@@ -3,10 +3,13 @@ plugins {
     id 'dev.implario.bundler' version '4.0.1'
 }
 
+apply plugin: 'kotlin'
+
 dependencies {
-    compileOnly 'ru.cristalix:client-api:foranelfer-SNAPSHOT'
-    implementation 'ru.cristalix:uiengine:4.87-SNAPSHOT'
-    implementation 'ru.cristalix:client-sdk:foranelfer-SNAPSHOT'
+    compileOnly 'dev.xdark:clientapi:2.0.3.5'
+    implementation 'ru.cristalix:client-sdk:isClientMod-SNAPSHOT'
+    implementation 'ru.cristalix:uiengine:1.4.21'
+//    implementation 'ru.cristalix:uiengine:1.4.16'
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
@@ -27,7 +30,7 @@ jar {
 bundle {
     modName 'Navigator Mod'
     mainClass 'App'
-    author 'func'
+    author 'func, ZentoFX'
     keep('class ru.cristalix.data.** { *; }')
     keep('class ru.cristalix.** { *; }')
     doLast {

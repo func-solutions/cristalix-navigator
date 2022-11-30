@@ -1,20 +1,24 @@
 import dev.xdark.clientapi.resource.ResourceLocation
 import ru.cristalix.uiengine.UIEngine
-import ru.cristalix.uiengine.utility.CENTER
-import ru.cristalix.uiengine.utility.V3
-import ru.cristalix.uiengine.utility.carved
-import ru.cristalix.uiengine.utility.text
+import ru.cristalix.uiengine.UIEngine.clientApi
+import ru.cristalix.uiengine.utility.*
 import javax.swing.text.StyleConstants.getBackground
 
 data class CompassGame(
     val name: String? = null,
     val title: String? = null,
     var icon: String? = null,
+    var category: String? = null,
     val realmType: String? = null,
     var lobby: Boolean = false,
     var subGames: List<CompassGame>? = null,
-    val tags: List<String>? = null,
-    val keywords: Set<String>? = null,
+    val tags: List<String>? = listOf(),
+    var infoTag: String? = null,
+    var infoDateBefore: String = "",
+    var infoColor: Int = 10493224,
+    var newActive: Boolean = false,
+    var newDateBefore: String = "",
+    val keywords: Set<String>? = setOf(),
     var backgroundColor: Int = 0,
     var starred: Boolean = false,
     var dynamic: Boolean = false,
@@ -32,21 +36,16 @@ data class CompassGame(
         }
 
     fun createTags() = tags?.mapNotNull { key -> compass.tags.firstOrNull { it.tag == key } }?.map {
-        val scaled = 0.75 + 0.125
-
         carved {
             val content = +text {
-                align = CENTER
-                origin = CENTER
                 content = it.tag
-                shadow = true
-                scale = V3(scaled, scaled, scaled)
+                align = BOTTOM
+                origin = BOTTOM
+                offset = V3(0.0, -1.5)
             }
+
+            size = V3(clientApi.fontRenderer().getStringWidth(content.content) + 8.0, 12.0)
             color = it.getBackground()
-            size = V3(
-                UIEngine.clientApi.fontRenderer().getStringWidth(content.content) * scaled + 8,
-                content.lineHeight + 2
-            )
         }
     }
 }

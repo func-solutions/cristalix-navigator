@@ -16,7 +16,7 @@ class RemoteTexture(
     @JvmField val sha1: String,
 )
 
-val NAMESPACE = "cache/animation"
+val NAMESPACE = "cache/navigator"
 private val cacheDir = Paths.get("$NAMESPACE/")
 
 fun loadTexture(urlString: String, info: RemoteTexture): CompletableFuture<ResourceLocation> {

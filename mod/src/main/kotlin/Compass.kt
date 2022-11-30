@@ -1,5 +1,7 @@
 data class Compass(
+    val categories: List<CompassGameCategory>,
     val tags: List<Tag>,
-    var banners: List<CompassBanner>,
+    val banners: List<CompassBanner> ?= listOf(),
     val games: List<CompassGame>,
+    val globalOnline: Int ?= 0
 )
